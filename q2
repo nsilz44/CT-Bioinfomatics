@@ -4,8 +4,6 @@ import sys
 import numpy as np
 
 # YOUR FUNCTIONS GO HERE -------------------------------------
-def backtrack(y,z,seq1,seq2,b):
-    
 def score(i,j,seq1,seq2):
     al = seq1[i]
     bl = seq2[j]
@@ -26,22 +24,54 @@ def score(i,j,seq1,seq2):
 def matrix(seq1,seq2):
     seq1 = '-' + seq1
     seq2 = '-' + seq2
+    #intializes best_score
     best_score = 0
+    #initalizes matrix m and matrix back with zeros
     m = np.zeros((len(seq1),len(seq2)))
-    b = np.empty((len(seq1),len(seq2)),dtype = 'S1')
-    b[:,0] = 'E'
-    b[0,:] = 'E'
+    # in matrix back 
+    # 0 => end sequence
+    # 1 => go diagonally
+    # 2 => go left
+    # 3 => go up
+    back = np.zeros((len(seq1),len(seq2)))
     for j in range(1,len(seq2)):
         for i in range(1,len(seq1)):
-            m[i,j] = max(score(i,j,seq1,seq2) + m[i-1,j-1],m[i-1] - 4
+            a = m[i-1,j] - 4
+            b = m[i,j-1] - 4
+            c = score(i,j,seq1,seq2) + m[i-1,j-1]
+            m[i,j] = max(a,b,c,0)
+            
+            if m[i,j] == c:
+                back[i,j] = 1
+            elif m[i,j] == a:
+                back[i,j] = 2
+            elif m[i,j] == b:
+                back[i,j] = 3
+            # else its a zero which is already in matrix
+            
             if m[i,j] > best_score:
                 best_score = m[i,j]
                 y = i
                 z = j
-    
-    print(m)
-    print(b)
-    print(best_score)
+    alignSeq1 = ''
+    alignSeq2 = ''
+    while back[y,z] != 0:
+        
+        if back[y,z] == 1:
+            alignSeq1 = seq1[y] + alignSeq1
+            alignSeq2 = seq2[z] + alignSeq2
+            y = y - 1
+            z = z - 1
+        elif back[y,z] == 3:
+            alignSeq1 = '-' + alignSeq1
+            alignSeq2 = seq2[z] + alignSeq2
+            y = y - 1
+        elif back[y,z] == 2:
+            alignSeq2 = '-' + alignSeq2
+            alignSeq1 = seq1[y] + alignSeq1
+            z = z - 1
+    best_alignment = [alignSeq1,alignSeq2]    
+    return best_score, best_alignment
     
 
         
